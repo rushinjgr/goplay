@@ -20,6 +20,15 @@ func (p *Page) save() error {
   return ioutil.WriteFile(filename, p.Body, 0600)
 }
 
+func saveHandler(w http.ResponseWriter, r *http.Request){
+  title := r.URL.Path[len("/save/"):]
+  body := r.FormValue("body")
+  //convert formvalue to []byte before it will fit in page struct
+  p := &Page{Title: title, Body: []byte(body)}
+  p.save()
+  http.Redirect(w,r,"/view/"+title,http.StatusFound)
+}
+
 //constructs file name from the title parameter
 //reads file's contents into a new variable body
 //returns a pointer to a page literal constructed with the proper title and body values
@@ -63,6 +72,6 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page){
 func main() {
   http.HandleFunc("/view/", viewHandler)
   http.HandleFunc("/edit/", editHandler)
-  //http.HandleFunc("/save/", saveHandler)
+  http.HandleFunc("/save/", saveHandler)
   http.ListenAndServe(":8080",nil)
 }
